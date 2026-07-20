@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engagement Invitation | Aishwarya & Sravan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050a17; 
+            --card-bg: linear-gradient(135deg, #0a1326 0%, #030610 100%);
+            --envelope-bg: #0b1730;
+            --envelope-flap: #0f2042;
+            --gold: #d4af37;
+            --gold-light: #f3e5ab;
+            --text-light: #f4f7fc;
+            --text-muted: #a9c2d6;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Moving Starfield Background */
+        #starsCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- LANDING PAGE / ENVELOPE SCREEN --- */
+        #landing-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: transparent;
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        #landing-screen.hide {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+
+        .landing-illustration {
+            width: 150px;
+            height: auto;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 2px 8px rgba(212, 175, 55, 0.3));
+            z-index: 101;
+            opacity: 0.9;
+        }
+
+        .landing-title {
+            font-family: 'Great Vibes', cursive !important;
+            color: var(--gold) !important;
+            font-size: 4.8em;
+            margin: 5px 0;
+            font-weight: 400 !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+            text-align: center;
+            line-height: 1.2;
+            z-index: 101;
+        }
+
+        /* Interactive 3D Envelope Structure */
+        .envelope-wrapper {
+            position: relative;
+            width: 280px;
+            height: 180px;
+            background-color: var(--envelope-bg);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            margin: 20px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            perspective: 800px;
+            border-radius: 4px;
+            z-index: 101;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0; left: 0;
+            width: 0; height: 0;
+            border-left: 140px solid transparent;
+            border-right: 140px solid transparent;
+            border-top: 100px solid var(--envelope-flap);
+            transform-origin: top;
+            transition: transform 0.6s ease;
+            z-index: 4;
+        }
+
+        .envelope-pocket {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 0; height: 0;
+            border-left: 140px solid transparent;
+            border-right: 140px solid transparent;
+            border-bottom: 90px solid #0d1c3a;
+            z-index: 3;
+        }
+
+        /* Interactive Ring Seal Button */
+        .ring-seal-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -30%);
+            z-index: 5;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        .ring-seal-btn:hover {
+            transform: translate(-50%, -35%) scale(1.05);
+        }
+
+        .seal-ring {
+            width: 45px;
+            height: 45px;
+            border: 4px solid var(--gold);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 15px var(--gold);
+            background: #050a17;
+        }
+
+        .seal-ring::before {
+            content: '';
+            position: absolute;
+            top: -10px; left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 10px; height: 10px;
+            background: #fff;
+            box-shadow: 0 0 10px #fff;
+        }
+
+        .seal-text {
+            font-size: 0.65em;
+            color: var(--gold-light);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 8px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            white-space: nowrap;
+            animation: pulseText 2s infinite;
+        }
+
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .envelope-wrapper.open .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 2;
+        }
+
+        /* --- MAIN INVITATION CONTENT PAGE --- */
+        #main-content {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease;
+            z-index: 10;
+        }
+
+        #main-content.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            padding-bottom: 80px;
+        }
+
+        .invitation-card {
+            background: var(--card-bg);
+            border: 2px solid var(--gold);
+            border-radius: 20px;
+            padding: 70px 30px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(212,175,55,0.1);
+            position: relative;
+            backdrop-filter: blur(3px);
+        }
+
+        .invitation-card::after {
+            content: '';
+            position: absolute;
+            top: 20px; left: 20px; right: 20px; bottom: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 14px;
+            pointer-events: none;
+        }
+
+        /* Corner Filigree Designs */
+        .corner-design {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            z-index: 3;
+            pointer-events: none;
+            filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.4));
+        }
+        
+        .tl { top: 25px; left: 25px; }
+        .tr { top: 25px; right: 25px; transform: rotate(90deg); }
+        .bl { bottom: 25px; left: 25px; transform: rotate(-90deg); }
+        .br { bottom: 25px; right: 25px; transform: rotate(180deg); }
+
+        /* Interlocking Engagement Rings Animation */
+        .rings-wrapper {
+            height: 120px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .ring {
+            width: 55px;
+            height: 55px;
+            border: 5px solid var(--gold);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4), inset 0 0 10px rgba(212, 175, 55, 0.4);
+        }
+
+        .ring.left {
+            transform: translateX(-150px);
+            opacity: 0;
+        }
+        .ring.right {
+            transform: translateX(150px);
+            opacity: 0;
+        }
+
+        .ring.right::before {
+            content: '';
+            position: absolute;
+            top: -12px; left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 12px; height: 12px;
+            background: #ffffff;
+            box-shadow: 0 0 15px #ffffff, 0 0 30px var(--gold-light);
+        }
+
+        h1 {
+            font-family: 'Great Vibes', cursive !important;
+            color: var(--gold) !important;
+            font-size: 4.8em;
+            margin: 10px 0 0px 0;
+            font-weight: 400 !important;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+
+        .animate-rings .ring.left {
+            animation: slideInLeft 1.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .animate-rings .ring.right {
+            animation: slideInRight 1.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        @keyframes slideInLeft {
+            0% { transform: translateX(-150px) rotate(-45deg); opacity: 0; }
+            100% { transform: translateX(-18px) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            0% { transform: translateX(150px) rotate(45deg); opacity: 0; }
+            100% { transform: translateX(18px) rotate(0deg); opacity: 1; }
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 4px; height: 4px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        .animate-rings .sparkle {
+            animation: flare 1s ease-in-out forwards;
+            animation-delay: 1.6s;
+        }
+
+        @keyframes flare {
+            0% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(2); box-shadow: 0 0 20px 5px white, 0 0 40px 10px var(--gold); }
+            100% { opacity: 0; transform: scale(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(35px);
+            transition: all 1.2s cubic-bezier(0.215, 0.610, 0.355, 1);
+            margin-bottom: 45px;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .intro {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold-light);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 0.85em;
+            line-height: 1.8;
+        }
+
+        .parents {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .ampersand {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            font-style: italic;
+            color: var(--gold-light);
+            margin: 15px 0;
+            opacity: 0.7;
+        }
+
+        .divider {
+            width: 80px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--gold), transparent);
+            margin: 40px auto;
+        }
+
+        .date {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6em;
+            color: var(--text-light);
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .time {
+            font-size: 1em;
+            color: var(--gold);
+            letter-spacing: 2px;
+            margin-top: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* --- LIVE COUNTDOWN GRAPHIC STYLES --- */
+        .countdown-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 25px auto 10px auto;
+            max-width: 320px;
+        }
+
+        .countdown-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 10px 0;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 65px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .countdown-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6em;
+            color: var(--gold);
+            font-weight: 600;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .countdown-label {
+            font-size: 0.6em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Venue Card Area Configurations */
+        .venue-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .venue-card-link {
+            text-decoration: none;
+            display: block;
+            color: inherit;
+        }
+
+        .venue-card-link:hover .venue-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(212, 175, 55, 0.4);
+        }
+
+        .venue-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25em;
+            color: var(--gold-light);
+            margin-bottom: 8px;
+            font-weight: 600;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .venue-card-link:hover .venue-title {
+            color: #ffffff;
+            text-shadow: 0 0 10px var(--gold);
+        }
+
+        .venue-address {
+            font-size: 0.9em;
+            color: #cbd5e1;
+            line-height: 1.8;
+            letter-spacing: 0.5px;
+        }
+
+        .directions-hint {
+            font-size: 0.75em;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 15px;
+            font-weight: 600;
+            opacity: 0.7;
+            transition: opacity 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .venue-card-link:hover .directions-hint {
+            opacity: 1;
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+        }
+
+        .scroll-hint {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75em;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.4);
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #main-content.show .scroll-hint {
+            opacity: 1;
+            visibility: visible;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); }
+            40% { transform: translate(-50%, -6px); }
+            60% { transform: translate(-50%, -3px); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- AUDIO ELEMENTS -->
+    <audio id="openSound" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-84.wav" preload="auto"></audio>
+    <audio id="bgMusic" src="Ranjha.mp3" loop preload="auto"></audio>
+
+    <!-- Shared Floating Starfield Layer -->
+    <canvas id="starsCanvas"></canvas>
+
+    <!-- 1. LANDING PAGE OVERLAY LAYER -->
+    <div id="landing-screen">
+        <img class="landing-illustration" src="Firstpg.svg" alt="Bride and Groom Silhouette">
+        
+        <h1 class="landing-title">Aishwarya</h1>
+        
+        <div class="envelope-wrapper" id="envelope">
+            <div class="envelope-flap"></div>
+            <div class="envelope-pocket"></div>
+            <div class="ring-seal-btn" onclick="openEnvelope()">
+                <div class="seal-ring"></div>
+                <div class="seal-text">Click Here</div>
+            </div>
+        </div>
+
+        <h1 class="landing-title">Sravan</h1>
+    </div>
+
+    <!-- Hidden Reusable SVG Blueprint Assets -->
+    <svg width="0" height="0" style="position:absolute">
+        <defs>
+            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f3e5ab" />
+                <stop offset="50%" stop-color="#d4af37" />
+                <stop offset="100%" stop-color="#aa7c11" />
+            </linearGradient>
+            <g id="corner-flourish">
+                <path d="M 0 0 L 50 0 L 50 3 L 3 3 L 3 50 L 0 50 Z" fill="url(#goldGradient)"/>
+                <path d="M 8 8 L 35 8 L 35 10 L 10 10 L 10 35 L 8 35 Z" fill="url(#goldGradient)" opacity="0.6"/>
+                <path d="M 14 14 Q 25 14 25 25 Q 14 25 14 14" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" opacity="0.8"/>
+                <circle cx="42" cy="6" r="2" fill="url(#goldGradient)"/>
+                <circle cx="6" cy="42" r="2" fill="url(#goldGradient)"/>
+            </g>
+        </defs>
+    </svg>
+
+    <!-- 2. MAIN SCROLLABLE INVITATION VALUE PAGE -->
+    <div id="main-content">
+        <div class="scroll-container">
+            <div class="invitation-card">
+                
+                <!-- Corner Filigree Borders -->
+                <svg class="corner-design tl" viewBox="0 0 50 50"><use href="#corner-flourish"/></svg>
+                <svg class="corner-design tr" viewBox="0 0 50 50"><use href="#corner-flourish"/></svg>
+                <svg class="corner-design bl" viewBox="0 0 50 50"><use href="#corner-flourish"/></svg>
+                <svg class="corner-design br" viewBox="0 0 50 50"><use href="#corner-flourish"/></svg>
+
+                <!-- Interlocking Rings Animation Wrapper -->
+                <div class="rings-wrapper" id="ringsContainer">
+                    <div class="ring left"></div>
+                    <div class="ring right"></div>
+                    <div class="sparkle"></div>
+                </div>
+
+                <!-- Intro Block -->
+                <div class="reveal intro-block">
+                    <div class="intro">Together with their families<br>you are cordially invited to the</div>
+                    <div class="ampersand" style="font-size: 1.3em; margin: 10px 0;">— Engagement Ceremony of —</div>
+                </div>
+
+                <!-- Bride Details -->
+                <div class="reveal">
+                    <h1>Aishwarya</h1>
+                    <div class="parents">Daughter of Mr. Ramesh Kumar Vuppala & Mrs. Jyothi</div>
+                </div>
+
+                <!-- Connection Link -->
+                <div class="reveal">
+                    <div class="ampersand">&</div>
+                </div>
+
+                <!-- Groom Details -->
+                <div class="reveal">
+                    <h1>Sravan</h1>
+                    <div class="parents">Son of Mr. Rajeev Mudiyanuru & Mrs. Shakuntala</div>
+                </div>
+
+                <div class="reveal divider"></div>
+
+                <!-- Date & Time Frame -->
+                <div class="reveal">
+                    <div class="date">Sunday, 30th August</div>
+                    <div class="time">6:30 PM Onwards</div>
+                </div>
+
+                <!-- FIXED: Dynamic Countdown Timer Block inserted here -->
+                <div class="reveal">
+                    <div class="countdown-wrapper" id="countdownContainer">
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="days">00</span>
+                            <span class="countdown-label">Days</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="hours">00</span>
+                            <span class="countdown-label">Hrs</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="minutes">00</span>
+                            <span class="countdown-label">Mins</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="seconds">00</span>
+                            <span class="countdown-label">Secs</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Venue Location Frame -->
+                <div class="reveal">
+                    <a href="https://share.google/WV1AX1dUAri5k9j9N" target="_blank" class="venue-card-link">
+                        <div class="venue-card">
+                            <div class="venue-title">Sai Madhura Banquet Halls</div>
+                            <div class="venue-address">
+                                3rd Floor, Hall No. 4<br>
+                                Panama, Vanasthalipuram<br>
+                                Hyderabad
+                            </div>
+                            <div class="directions-hint">📍 Click here for routes & directions</div>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (history.scrollRestoration) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+
+        // --- INTERACTIVE ENVELOPE CONTROLLER ---
+        function openEnvelope() {
+            const envelope = document.getElementById('envelope');
+            const landingScreen = document.getElementById('landing-screen');
+            const mainContent = document.getElementById('main-content');
+            const ringsContainer = document.getElementById('ringsContainer');
+            
+            const openSound = document.getElementById('openSound');
+            const bgMusic = document.getElementById('bgMusic');
+
+            openSound.play().catch(error => console.log("Audio play blocked:", error));
+
+            bgMusic.volume = 0.4;
+            bgMusic.play().catch(error => console.log("Audio play blocked:", error));
+
+            envelope.classList.add('open');
+
+            setTimeout(() => {
+                landingScreen.classList.add('hide');
+                mainContent.classList.add('show');
+                
+                setTimeout(() => {
+                    ringsContainer.classList.add('animate-rings');
+                }, 400);
+
+                setTimeout(() => {
+                    const intro = document.querySelector('.intro-block');
+                    if(intro) intro.classList.add('active');
+                }, 1000);
+
+            }, 750); 
+        }
+
+        // --- SCROLL DRIVEN ELEMENT ENGINE ---
+        document.addEventListener("DOMContentLoaded", function() {
+            window.scrollTo(0, 0);
+            
+            const reveals = document.querySelectorAll('.reveal');
+
+            const revealOnScroll = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.12,
+                rootMargin: "0px 0px -40px 0px"
+            });
+
+            reveals.forEach(element => {
+                revealOnScroll.observe(element);
+            });
+
+            window.addEventListener('scroll', function() {
+                const hint = document.querySelector('.scroll-hint');
+                if (hint) {
+                    if (window.scrollY > 80) {
+                        hint.style.opacity = '0';
+                        hint.style.visibility = 'hidden';
+                    } else if (document.getElementById('main-content').classList.contains('show')) {
+                        hint.style.opacity = '1';
+                        hint.style.visibility = 'visible';
+                    }
+                }
+            });
+        });
+
+        // --- COUNTDOWN TIMING ENGINE ---
+        const targetDate = new Date("Aug 30, 2026 18:30:00").getTime();
+
+        const countdownInterval = setInterval(function() {
+            const now = new Date().getTime();
+            const timeDifference = targetDate - now;
+
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = String(days).padStart(2, '0');
+            document.getElementById("hours").innerText = String(hours).padStart(2, '0');
+            document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
+            document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+
+            if (timeDifference < 0) {
+                clearInterval(countdownInterval);
+                document.getElementById("countdownContainer").innerHTML = "<div class='time' style='font-size: 1.25em; margin: 15px 0;'>The Celebration Has Begun!</div>";
+            }
+        }, 1000);
+
+        // --- MOVING BACKGROUND STAR ENGINE ---
+        const canvas = document.getElementById('starsCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let starsArray = [];
+        const numberOfStars = 90;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Star {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 1.4 + 0.2;
+                this.speedY = -(Math.random() * 0.18 + 0.05);
+                this.speedX = (Math.random() * 0.1 - 0.05);
+                this.opacity = Math.random() * 0.7 + 0.2;
+                this.fadeDirection = Math.random() > 0.5 ? 0.006 : -0.006;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+                if (this.x < 0 || this.x > canvas.width) {
+                    this.x = Math.random() * canvas.width;
+                }
+
+                this.opacity += this.fadeDirection;
+                if (this.opacity > 0.9 || this.opacity < 0.2) {
+                    this.fadeDirection = -this.fadeDirection;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.shadowBlur = this.radius * 4;
+                ctx.shadowColor = '#ffffff';
+                ctx.fill();
+            }
+        }
+
+        function initStars() {
+            starsArray = [];
+            for (let i = 0; i < numberOfStars; i++) {
+                starsArray.push(new Star());
+            }
+        }
+
+        function animateStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.shadowBlur = 0; 
+            
+            for (let i = 0; i < starsArray.length; i++) {
+                starsArray[i].update();
+                starsArray[i].draw();
+            }
+            requestAnimationFrame(animateStars);
+        }
+
+        initStars();
+        animateStars();
+    </script>
+</body>
+</html>
