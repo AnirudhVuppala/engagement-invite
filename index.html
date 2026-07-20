@@ -71,7 +71,6 @@
             opacity: 0.9;
         }
 
-        /* Styled with Parisienne */
         .landing-title {
             font-family: 'Allura', cursive !important;
             color: var(--gold) !important;
@@ -278,7 +277,6 @@
             box-shadow: 0 0 15px #ffffff, 0 0 30px var(--gold-light);
         }
 
-        /* Styled with Parisienne */
         h1 {
             font-family: 'Allura', cursive !important;
             color: var(--gold) !important;
@@ -507,6 +505,27 @@
             40% { transform: translate(-50%, -6px); }
             60% { transform: translate(-50%, -3px); }
         }
+
+        /* --- ADDED FIXED: MOBILE RESPONSIVE MEDIA QUERY --- */
+        @media (max-width: 480px) {
+            h1, .landing-title {
+                font-size: 3.5em !important; /* Scales names down cleanly for mobile viewports */
+            }
+            .invitation-card {
+                padding: 50px 20px; /* Reduces horizontal card margins to create safe room */
+            }
+            .landing-illustration {
+                width: 120px; /* Scales header artwork smoothly for mobile layout balance */
+            }
+            .corner-design {
+                width: 40px; /* Keeps filigree proportional */
+                height: 40px;
+            }
+            .tl { top: 15px; left: 15px; }
+            .tr { top: 15px; right: 15px; }
+            .bl { bottom: 15px; left: 15px; }
+            .br { bottom: 15px; right: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -575,7 +594,6 @@
                 <!-- Intro Block -->
                 <div class="reveal intro-block">
                     <div class="intro">Together with their families<br>you are cordially invited to the</div>
-                    <!-- Accent styling using Allura -->
                     <div class="ampersand" style="font-size: 2.2em; margin: 10px 0;"> Engagement Ceremony of </div>
                 </div>
 
